@@ -1,0 +1,11 @@
+[  
+  "accuracy",
+  "llm_judge",
+  "bertscore",
+  "exact_match",
+  "recall",
+  "perplexity",
+  "f1",
+  "bleu",
+  "rouge"
+]

@@ -1,0 +1,38 @@
+{
+  "1": {
+    "name": "recall",
+    "metrics": ["recall"]
+  },
+  "8": {
+    "name": "llm_judge",
+    "metrics": ["llm_judge"]
+  },
+  "9": {
+    "name": "rouge",
+    "metrics": ["rouge"]
+  },
+  "10": {
+    "name": "bleu",
+    "metrics": ["bleu"]
+  },
+  "11": {
+    "name": "bertscore",
+    "metrics": ["bertscore"]
+  },
+  "12": {
+    "name": "exact_match",
+    "metrics": ["exact_match"]
+  },
+  "14": {
+    "name": "f1",
+    "metrics": ["f1"]
+  },
+  "15": {
+    "name": "accuracy",
+    "metrics": ["accuracy"]
+  },
+  "16": {
+    "name": "perplexity",
+    "metrics": ["perplexity"]
+  }
+}

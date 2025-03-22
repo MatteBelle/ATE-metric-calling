@@ -1,0 +1,59 @@
+# Use CUDA 12.2 development image as recommended by tutor
+FROM nvidia/cuda:12.2.0-devel-ubuntu22.04
+LABEL maintainer="disi-unibo-nlp"
+
+# Zero interaction (default answers to all questions)
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Set working directory to match your project structure
+WORKDIR /home/belletti/ATE-metric-calling/STE
+
+# Install general-purpose dependencies
+RUN apt-get update -y && \
+    apt-get install -y curl \
+                       git \
+                       bash \
+                       nano \
+                       python3.11 \
+                       python3-pip && \
+    apt-get autoremove -y && \
+    apt-get clean -y && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set Python path
+ENV PYTHONPATH=${PYTHONPATH}:/home/belletti/ATE-metric-calling
+
+# Upgrade pip and install wrapt (helps avoid some dependency conflicts)
+RUN pip install --upgrade pip && \
+    pip install wrapt --upgrade --ignore-installed && \
+    pip install gdown
+
+# Create directory for requirements files
+RUN mkdir -p /home/belletti/ATE-metric-calling/build
+
+# Copy requirements files to the container
+COPY test_compare/build/requirements.txt .
+COPY test_compare/build/requirements_unsloth.txt .
+
+# Install requirements in specific order
+RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements_unsloth.txt
+
+# Install flash attention with proper flags
+RUN pip3 install flash-attn==2.7.4.post1 --no-build-isolation
+
+# Set the Hugging Face cache directory
+ENV HF_HOME="/huggingface_cache"
+RUN mkdir -p /huggingface_cache
+
+# Copy your server code
+COPY STE/llm_server.py /home/belletti/ATE-metric-calling/STE/test_compare/llm_server_answer_only.py
+
+# Expose the port that FastAPI will use
+EXPOSE 8000
+
+# Run the server using uvicorn
+CMD ["sh", "-c", "python3 -m uvicorn llm_server:app --host 0.0.0.0 --port ${SERVER_PORT:-8000}"]
+
+# Back to default frontend
+ENV DEBIAN_FRONTEND=dialog

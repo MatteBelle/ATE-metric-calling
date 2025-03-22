@@ -1,0 +1,83 @@
+services:
+  llm-server-comparison:
+    build:
+      context: .
+      dockerfile: ATE/test_compare/Dockerfile.server.comparison
+    container_name: llm-server-comparison
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=${HF_TOKEN}
+      - HF_HOME=/huggingface_cache
+    volumes:
+      - /home/belletti/huggingface_cache:/huggingface_cache
+    ports:
+      - "8000:8000"
+    
+  model-comparison:
+    build:
+      context: .
+      dockerfile: ATE/test_compare/Dockerfile.main.comparison
+    container_name: model-comparison
+    environment:
+      - PYTHONPATH=/home/belletti/ATE-metric-calling
+      - MODEL_SERVER_URL=http://llm-server-comparison:8000
+    volumes:
+      - ./ATE:/home/belletti/ATE-metric-calling/ATE
+      # Add volume for persistent output storage
+      - ./results:/home/belletti/ATE-metric-calling/ATE/test_compare/outputs
+    depends_on:
+      - llm-server-comparison
+    # Default command remains "compare"
+    command: compare
+
+  # New service for single model evaluation
+  model-evaluate:
+    build:
+      context: .
+      dockerfile: ATE/test_compare/Dockerfile.main.comparison
+    # No fixed container name so multiple instances can run
+    environment:
+      - PYTHONPATH=/home/belletti/ATE-metric-calling
+      - MODEL_SERVER_URL=http://llm-server-comparison:8000
+    volumes:
+      - ./ATE:/home/belletti/ATE-metric-calling/ATE
+      - ./results:/home/belletti/ATE-metric-calling/ATE/test_compare/outputs
+    depends_on:
+      - llm-server-comparison
+    # Default command (will be overridden when running)
+    command: evaluate
+
+  # New service for comparing saved results
+  compare-saved:
+    build:
+      context: .
+      dockerfile: ATE/test_compare/Dockerfile.main.comparison
+    environment:
+      - PYTHONPATH=/home/belletti/ATE-metric-calling
+    volumes:
+      - ./ATE:/home/belletti/ATE-metric-calling/ATE
+      - ./results:/home/belletti/ATE-metric-calling/ATE/test_compare/outputs
+    # No dependency on llm-server as it doesn't need it
+    command: compare_saved
+
+  # New service for refining dataset
+  refine-dataset:
+    build:
+      context: .
+      dockerfile: ATE/dataset_refinement/Dockerfile.refine_dataset
+    container_name: refine-dataset
+    environment:
+      - PYTHONPATH=/home/belletti/ATE-metric-calling
+      - MODEL_SERVER_URL=http://llm-server-comparison:8000
+    volumes:
+      - ./ATE:/home/belletti/ATE-metric-calling/ATE
+      # Mount your dataset files
+      - ./comparison-results:/home/belletti/ATE-metric-calling/comparison-results
+    depends_on:
+      - llm-server-comparison
