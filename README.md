@@ -67,7 +67,14 @@ ATE-metric-calling/
    cd ATE-metric-calling
    ```
 
-2. Install the required dependencies (it's preferred to use the Docker):
+2 Use the docker compose related to the task:
+   - Create a ".env" file in the outer directory with the line: HF_TOKEN=yourtoken
+   - Each task might require to modify parts of the code for your specific use case.
+   a) Use docker-compose to run autonomous trial-and-error for dataset creation using tool_metadata.
+   b) Use docker-compose-answer-only to get answers from an extracted dataset using a chosen model.
+   c) Use docker-compose.comparison to run model evaluation from a dataset.
+
+2.1 Install the required dependencies (it's preferred to use the Docker):
    ```
    pip install -r ATE/requirements.txt
    pip install -r ATE/finetuning/requirements.finetuning.txt
