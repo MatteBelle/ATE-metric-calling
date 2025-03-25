@@ -345,13 +345,13 @@
         "required_parameters": [
             {
                 "name": "predictions",
-                "type": "LIST of ANY",
+                "type": "LIST of INT",
                 "description": "The *N* predicted labels.",
                 "default": ""
             },
             {
                 "name": "references",
-                "type": "LIST of ANY",
+                "type": "LIST of INT",
                 "description": "The *N* true labels.",
                 "default": ""
             }
